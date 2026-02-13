@@ -2,6 +2,8 @@
 
 A simple full-stack task management application built with Next.js, TypeScript, Prisma, and PostgreSQL.
 
+🔗 **Live Demo**: [https://taskboard-cyan-delta.vercel.app/](https://taskboard-cyan-delta.vercel.app/)
+
 ## Features
 
 - **Authentication**: Signup, login, logout with secure password hashing (bcrypt)
@@ -34,11 +36,13 @@ cd Taskboard/taskboard
 npm install
 ```
 
-2. Create a `.env` file with your database URL:
+2. Create a `.env` file based on the example:
 
+```bash
+cp .env.example .env
 ```
-DATABASE_URL="your-postgres-connection-string"
-```
+
+Then update `DATABASE_URL` with your PostgreSQL connection string.
 
 3. Generate Prisma client and push schema:
 
@@ -73,6 +77,19 @@ taskboard/
 └── ...
 ```
 
+## Authentication Flow
+
+1. **Signup**: User submits email + password → password hashed with bcrypt (10 salt rounds) → user stored in database
+2. **Login**: User submits credentials → password verified against hash → session cookie set (`httpOnly`, `sameSite: lax`, 7-day expiry)
+3. **Protected Routes**: Middleware checks for session cookie → redirects to `/login` if missing
+4. **API Authorization**: Each API route validates session cookie → returns 401 if unauthorized
+5. **Logout**: Session cookie deleted → user redirected to login
+
+> **Security Notes:**
+> - Passwords are never stored in plain text
+> - Session cookies are `httpOnly` (not accessible via JavaScript)
+> - Cookies are `secure` in production (HTTPS only)
+
 ## API Endpoints
 
 | Method | Endpoint            | Description           |
@@ -86,8 +103,26 @@ taskboard/
 
 ## Database Schema
 
-- **User**: id, email, passwordHash, createdAt
-- **Task**: id, title, status, userId, createdAt, updatedAt
+```
+┌─────────────────────────────────┐       ┌─────────────────────────────────┐
+│             USER                │       │             TASK                │
+├─────────────────────────────────┤       ├─────────────────────────────────┤
+│ id           INT (PK)           │       │ id           INT (PK)           │
+│ email        VARCHAR (UNIQUE)   │       │ title        VARCHAR            │
+│ passwordHash VARCHAR            │       │ status       VARCHAR            │
+│ createdAt    TIMESTAMP          │       │ userId       INT (FK) ──────────┼───┐
+└─────────────────────────────────┘       │ createdAt    TIMESTAMP          │   │
+              │                           │ updatedAt    TIMESTAMP          │   │
+              │                           └─────────────────────────────────┘   │
+              │                                                                 │
+              └─────────────────────── 1 : N ───────────────────────────────────┘
+```
+
+**Relationships:**
+- One **User** can have many **Tasks** (1:N relationship)
+- Deleting a User cascades to delete all their Tasks
+
+**Status Values:** `todo` | `in-progress` | `done`
 
 ## License
 
