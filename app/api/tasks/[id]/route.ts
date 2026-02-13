@@ -25,6 +25,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 		});
 		return NextResponse.json({ task: updated });
 	} catch (err) {
+		console.error('[tasks:update]', err instanceof Error ? err.message : err);
 		return NextResponse.json({ error: 'Server error' }, { status: 500 });
 	}
 }

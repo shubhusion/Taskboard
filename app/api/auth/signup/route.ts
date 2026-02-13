@@ -27,6 +27,7 @@ export async function POST(req: Request) {
 		await prisma.user.create({ data: { email, passwordHash:hashedPassword } });
 		return NextResponse.json({ success: true });
 	} catch (err) {
+		console.error('[signup]', err instanceof Error ? err.message : err);
 		return NextResponse.json({ error: 'Server error.' }, { status: 500 });
 	}
 }

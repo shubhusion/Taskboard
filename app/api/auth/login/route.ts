@@ -24,6 +24,7 @@ export async function POST(req: Request) {
 		await createSession(String(user.id), response);
 		return response;
 	} catch (err) {
+		console.error('[login]', err instanceof Error ? err.message : err);
 		return NextResponse.json({ error: 'Server error.' }, { status: 500 });
 	}
 }

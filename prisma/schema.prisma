@@ -18,7 +18,6 @@ model User {
   passwordHash String
   createdAt    DateTime @default(now())
   tasks        Task[]
-  sessions     Session[]
 }
 
 // Task model: stores tasks for each user
@@ -30,13 +29,4 @@ model Task {
   status    String   // 'todo', 'in-progress', 'done'
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-// Session model: stores user sessions for authentication
-model Session {
-  id        String   @id @default(uuid())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    Int
-  createdAt DateTime @default(now())
-  expiresAt DateTime
 }

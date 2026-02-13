@@ -4,6 +4,16 @@ import { getSessionUserId } from '@/lib/auth';
 
 const VALID_STATUSES = ['todo', 'in-progress', 'done'];
 
+// Basic XSS sanitization - escapes HTML entities
+function sanitize(str: string): string {
+	return str
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#x27;');
+}
+
 export async function POST(req: Request) {
 	try {
 		const userId = await getSessionUserId();
@@ -19,13 +29,14 @@ export async function POST(req: Request) {
 		}
 		const task = await prisma.task.create({
 			data: {
-				title,
+				title: sanitize(title.trim()),
 				status,
 				userId: parseInt(userId, 10),
 			},
 		});
 		return NextResponse.json({ task });
 	} catch (err) {
+		console.error('[tasks:create]', err instanceof Error ? err.message : err);
 		return NextResponse.json({ error: 'Server error' }, { status: 500 });
 	}
 }
@@ -42,6 +53,7 @@ export async function GET() {
 		});
 		return NextResponse.json({ tasks });
 	} catch (err) {
+		console.error('[tasks:list]', err instanceof Error ? err.message : err);
 		return NextResponse.json({ error: 'Server error' }, { status: 500 });
 	}
 }
