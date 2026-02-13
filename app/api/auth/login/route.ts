@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/db';
+import {prisma} from '@/lib/db';
 import { verifyPassword, createSession } from '@/lib/auth';
 
 export async function POST(req: Request) {
@@ -15,13 +15,13 @@ export async function POST(req: Request) {
 			return NextResponse.json({ error: 'Invalid credentials.' }, { status: 401 });
 		}
 
-		const valid = await verifyPassword(password, user.hashedPassword);
+		const valid = await verifyPassword(password, user.passwordHash);
 		if (!valid) {
 			return NextResponse.json({ error: 'Invalid credentials.' }, { status: 401 });
 		}
 
 		const response = NextResponse.json({ success: true });
-		await createSession(user.id, response);
+		await createSession(String(user.id), response);
 		return response;
 	} catch (err) {
 		return NextResponse.json({ error: 'Server error.' }, { status: 500 });
