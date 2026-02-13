@@ -7,6 +7,10 @@ const VALID_STATUSES = ['todo', 'in-progress', 'done'];
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { id } = await params;
+		const taskId = parseInt(id, 10);
+		if (isNaN(taskId)) {
+			return NextResponse.json({ error: 'Invalid task ID' }, { status: 400 });
+		}
 		const userId = await getSessionUserId();
 		if (!userId) {
 			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -15,7 +19,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 		if (!VALID_STATUSES.includes(status)) {
 			return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
 		}
-		const task = await prisma.task.findUnique({ where: { id: parseInt(id, 10) } });
+		const task = await prisma.task.findUnique({ where: { id: taskId } });
 		if (!task || task.userId !== parseInt(userId, 10)) {
 			return NextResponse.json({ error: 'Task not found or unauthorized' }, { status: 404 });
 		}

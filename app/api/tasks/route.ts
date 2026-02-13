@@ -24,6 +24,9 @@ export async function POST(req: Request) {
 		if (!title || typeof title !== 'string' || !title.trim()) {
 			return NextResponse.json({ error: 'Title required' }, { status: 400 });
 		}
+		if (title.trim().length > 200) {
+			return NextResponse.json({ error: 'Title too long (max 200 characters)' }, { status: 400 });
+		}
 		if (!VALID_STATUSES.includes(status)) {
 			return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
 		}
